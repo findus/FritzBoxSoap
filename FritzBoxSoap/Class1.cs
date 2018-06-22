@@ -1,33 +1,57 @@
 ﻿using System;
 using System.Net;
 using System.Xml;
+using System.Threading;
+using System.Net.Security;
 
 namespace FritzBoxSoap
 {
-    public class Requests
+    public class SoapRequestSender
     {
-        private static string SendSoapRequest(String url, WebHeaderCollection headers, String body)
+
+        private string ip;
+        private string pw;
+        public static string user = "dslf-config";
+
+        private string port = "";
+
+        public SoapRequestSender(string ip, string password)
         {
+            this.ip = ip;
+            this.pw = password;
+        }
+
+        private static string SendSoapRequest(String url, WebHeaderCollection headers, String body,NetworkCredential cred)
+        {
+            var sslFailureCallback = new RemoteCertificateValidationCallback(delegate { return true; });
+            ServicePointManager.ServerCertificateValidationCallback += sslFailureCallback;
+
             WebClient client = new WebClient();
+
 
             client.Encoding = System.Text.Encoding.UTF8;
             client.Headers = headers;
+            if(cred != null)
+                client.Credentials = cred;
+
             var mem = client.UploadString(url, body);
             return mem;
         }
 
-        public static string GetPort()
+        private  string GetPort()
         {
+            if(!port.Equals(""))
+            {
+                return port;
+            } else
+            {
+                var url = "http://" + ip + ":49000/upnp/control/deviceinfo";
 
-            var ip = "192.168.178.1";
+                var header = new WebHeaderCollection();
+                header.Add("Content-Type", "text/xml; charset='utf-8'");
+                header.Add("SOAPACTION", "urn:dslforum-org:service:DeviceInfo:1#GetSecurityPort");
 
-            var url = "http://" + ip + ":49000/upnp/control/deviceinfo";
-
-            var header = new WebHeaderCollection();
-            header.Add("Content-Type", "text/xml; charset='utf-8'");
-            header.Add("SOAPACTION", "urn:dslforum-org:service:DeviceInfo:1#GetSecurityPort");
-
-            var body = @"<?xml version=""1.0""?>
+                var body = @"<?xml version=""1.0""?>
                             <s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/"" s:encodingStyle=""http://schemas.xmlsoap.org/soap/encoding/"">
                                 <s:Body>
                                     <u:GetSecurityPort xmlns:u=""urn:dslforum-org:service:DeviceInfo:1"">
@@ -35,20 +59,69 @@ namespace FritzBoxSoap
                                 </s:Body>
                         </s:Envelope>".Replace(System.Environment.NewLine, "");
 
-            var str = SendSoapRequest(url, header,body);
-            var xml = getSoapLetter(str);
+                var str = SendSoapRequest(url, header, body, null);
+                var xml = getSoapLetter(str);
 
-            XmlNamespaceManager manager = new XmlNamespaceManager(xml.NameTable);
-            manager.AddNamespace("dsl", "urn:dslforum-org:service:DeviceInfo:1");
+                XmlNamespaceManager manager = new XmlNamespaceManager(xml.NameTable);
+                manager.AddNamespace("dsl", "urn:dslforum-org:service:DeviceInfo:1");
 
-            XmlNode list = xml.SelectSingleNode("//dsl:GetSecurityPortResponse",manager);
+                XmlNode list = xml.SelectSingleNode("//dsl:GetSecurityPortResponse", manager);
 
-            return list.InnerText;
-
-
+                return list.InnerText;
+            }  
         }
 
-        private static XmlDocument getSoapLetter(string str)
+        public WANInfo GetWANInfo()
+        {
+            var url = "https://" + ip + ":" + GetPort() + "/upnp/control/wandslifconfig1";
+
+            var header = new WebHeaderCollection();
+            header.Add("Content-Type", "text/xml; charset='utf-8'");
+            header.Add("SOAPACTION", "urn:dslforum-org:service:WANDSLInterfaceConfig:1#GetInfo");
+
+            NetworkCredential cred = new NetworkCredential(user, pw);
+
+            var body = @"<?xml version=""1.0""?>
+                            <s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/"" s:encodingStyle=""http://schemas.xmlsoap.org/soap/encoding/"">
+                                    <s:Body>
+                                        <u:GetInfo xmlns:u=""urn:dslforum-org:service:WANDSLInterfaceConfig:1"">
+                                        </u:GetInfo>
+                                    </s:Body>
+                             </s:Envelope>".Replace(System.Environment.NewLine, "");
+
+            var str = SendSoapRequest(url, header, body, cred);
+            var xml = getSoapLetter(str);
+
+            return new WANInfo(xml);
+        }
+
+        public OnlineMonitorInfo GetOnlineMonitorInfo()
+        {
+
+            var url = "http://" + ip + ":49000/upnp/control/wancommonifconfig1";
+
+            var header = new WebHeaderCollection();
+            header.Add("Content-Type", "text/xml; charset='utf-8'");
+            header.Add("SOAPACTION", "urn:dslforum-org:service:WANCommonInterfaceConfig:1#X_AVM-DE_GetOnlineMonitor");
+
+            NetworkCredential cred = new NetworkCredential(user, pw);
+
+            var body = @"<?xml version=""1.0""?>
+                            <s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/"" s:encodingStyle=""http://schemas.xmlsoap.org/soap/encoding/"">
+                                <s:Body>
+                                    <u:X_AVM-DE_GetOnlineMonitor xmlns:u=""urn:dslforum-org:service:WANDSLInterfaceConfig:1"">
+                                        <NewSyncGroupIndex></NewSyncGroupIndex>
+                                    </u:X_AVM-DE_GetOnlineMonitor>
+                                </s:Body>
+                            </s:Envelope>".Replace(System.Environment.NewLine, "");
+
+            var str = SendSoapRequest(url, header, body, cred);
+            var xml = getSoapLetter(str);
+
+            return new OnlineMonitorInfo(xml);
+        }
+
+        private XmlDocument getSoapLetter(string str)
         {
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(str);
