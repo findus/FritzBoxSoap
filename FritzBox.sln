@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unittests", "Unittests\Unit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FritzBoxSoap", "FritzBoxSoap\FritzBoxSoap.csproj", "{46DE790F-510F-4ACE-804D-03A68F797D20}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CLI", "CLI\CLI.csproj", "{FC132D09-70F1-490B-A59E-B86476E717EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{46DE790F-510F-4ACE-804D-03A68F797D20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46DE790F-510F-4ACE-804D-03A68F797D20}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46DE790F-510F-4ACE-804D-03A68F797D20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC132D09-70F1-490B-A59E-B86476E717EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC132D09-70F1-490B-A59E-B86476E717EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC132D09-70F1-490B-A59E-B86476E717EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC132D09-70F1-490B-A59E-B86476E717EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

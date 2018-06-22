@@ -3,11 +3,15 @@ using System.Net;
 using System.Xml;
 using System.Threading;
 using System.Net.Security;
+using System.Collections.Generic;
 
 namespace FritzBoxSoap
 {
     public class SoapRequestSender
     {
+
+        private Dictionary<String, DateTime> timewatchdict = new Dictionary<string, DateTime>();
+        private Dictionary<String, String> cache = new Dictionary<string, String>();
 
         private string ip;
         private string pw;
@@ -21,21 +25,32 @@ namespace FritzBoxSoap
             this.pw = password;
         }
 
-        private static string SendSoapRequest(String url, WebHeaderCollection headers, String body,NetworkCredential cred)
+        private string SendSoapRequest(String url, WebHeaderCollection headers, String body, NetworkCredential cred)
         {
-            var sslFailureCallback = new RemoteCertificateValidationCallback(delegate { return true; });
-            ServicePointManager.ServerCertificateValidationCallback += sslFailureCallback;
 
-            WebClient client = new WebClient();
+            if (this.cache.ContainsKey(url) && (DateTime.Now - this.timewatchdict[url]).TotalSeconds < 5)
+            {
+                Console.WriteLine("Using Cached entry");
+                return this.cache[url];
 
+            } else
+            {
+                Console.WriteLine("Cache expired redownload");
+                var sslFailureCallback = new RemoteCertificateValidationCallback(delegate { return true; });
+                ServicePointManager.ServerCertificateValidationCallback += sslFailureCallback;
 
-            client.Encoding = System.Text.Encoding.UTF8;
-            client.Headers = headers;
-            if(cred != null)
-                client.Credentials = cred;
+                WebClient client = new WebClient();
 
-            var mem = client.UploadString(url, body);
-            return mem;
+                client.Encoding = System.Text.Encoding.UTF8;
+                client.Headers = headers;
+                if (cred != null)
+                    client.Credentials = cred;
+
+                var mem = client.UploadString(url, body);
+                cache[url] = mem;
+                timewatchdict[url] = DateTime.Now;
+                return mem;
+            }         
         }
 
         private  string GetPort()

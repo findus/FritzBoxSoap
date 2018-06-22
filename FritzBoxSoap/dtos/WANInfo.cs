@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System;
+using System.Xml;
 
 namespace FritzBoxSoap
 {
@@ -19,14 +20,14 @@ namespace FritzBoxSoap
             return doc.SelectSingleNode("//dsl:GetInfoResponse/"+str, manager).InnerText;
         }
 
-        public string getDownStreamRate()
+        public long getDownStreamRate()
         {
-            return getInfo("NewDownstreamCurrRate");
+            return Convert.ToInt64(getInfo("NewDownstreamCurrRate"));
         }
 
-        public string getUpstreamRate()
+        public long getUpstreamRate()
         {
-            return getInfo("NewUpstreamCurrRate");
+            return Convert.ToInt64(getInfo("NewUpstreamCurrRate"));
         }
     }
 }

@@ -17,23 +17,25 @@ namespace Unittests
             {
                 writer.WriteLine("TEST");
                 writer.WriteLine(req.GetOnlineMonitorInfo().getCurrentDownStreamRate());
-                Thread.Sleep(1000);
-                writer.WriteLine(req.GetOnlineMonitorInfo().getCurrentDownStreamRate());
-                Thread.Sleep(1000);
-
                 writer.WriteLine(req.GetOnlineMonitorInfo().getCurrentDownStreamRate());
 
-                Thread.Sleep(1000);
                 writer.WriteLine(req.GetOnlineMonitorInfo().getCurrentDownStreamRate());
-                Thread.Sleep(1000);
+
                 writer.WriteLine(req.GetOnlineMonitorInfo().getCurrentDownStreamRate());
-                Thread.Sleep(1000);
+                writer.WriteLine(req.GetOnlineMonitorInfo().getCurrentDownStreamRate());
                 writer.WriteLine(req.GetOnlineMonitorInfo().getCurrentDownStreamRate());
                 var str = req.GetOnlineMonitorInfo().getCurrentDownStreamRate();
-                Thread.Sleep(1000);
                 writer.WriteLine(str);
             }
                
+        }
+
+        [TestMethod]
+        public void PercentageDl()
+        {
+            FritzBoxSoap.FritzBoxSoap so = new FritzBoxSoap.FritzBoxSoap("192.168.178.1", "-");
+            double d = so.getPercentageUsageDownStream();
+            Console.WriteLine(d);
         }
     }
 }
