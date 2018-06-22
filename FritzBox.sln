@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FritzBoxSoap", "FritzBoxSoa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CLI", "CLI\CLI.csproj", "{FC132D09-70F1-490B-A59E-B86476E717EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Taskbar", "Taskbar\Taskbar.csproj", "{1437A8E0-9487-424D-92DB-5B2E2147413D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Win", "Sample.Win\Sample.Win.csproj", "{4EE0B5C1-E49B-4CE8-AD43-75DB00104A00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{FC132D09-70F1-490B-A59E-B86476E717EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FC132D09-70F1-490B-A59E-B86476E717EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FC132D09-70F1-490B-A59E-B86476E717EE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1437A8E0-9487-424D-92DB-5B2E2147413D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1437A8E0-9487-424D-92DB-5B2E2147413D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1437A8E0-9487-424D-92DB-5B2E2147413D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1437A8E0-9487-424D-92DB-5B2E2147413D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4EE0B5C1-E49B-4CE8-AD43-75DB00104A00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EE0B5C1-E49B-4CE8-AD43-75DB00104A00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EE0B5C1-E49B-4CE8-AD43-75DB00104A00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EE0B5C1-E49B-4CE8-AD43-75DB00104A00}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
