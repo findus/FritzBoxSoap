@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unittests", "Unittests\Unittests.csproj", "{805EBE3E-9ECE-4BB0-B754-9F221402DEFE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FritzBoxSoap", "FritzBoxSoap\FritzBoxSoap.csproj", "{46DE790F-510F-4ACE-804D-03A68F797D20}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{805EBE3E-9ECE-4BB0-B754-9F221402DEFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{805EBE3E-9ECE-4BB0-B754-9F221402DEFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{805EBE3E-9ECE-4BB0-B754-9F221402DEFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{805EBE3E-9ECE-4BB0-B754-9F221402DEFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46DE790F-510F-4ACE-804D-03A68F797D20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46DE790F-510F-4ACE-804D-03A68F797D20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46DE790F-510F-4ACE-804D-03A68F797D20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46DE790F-510F-4ACE-804D-03A68F797D20}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D6F2B123-88AF-426B-B720-85D4EAEAF62B}
+	EndGlobalSection
+EndGlobal
