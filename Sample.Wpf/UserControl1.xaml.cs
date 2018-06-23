@@ -87,21 +87,28 @@ namespace Sample.Wpf
 
             new Thread(() =>
             {
-                PercentageDl = 50;
-                FritzBoxSoap.FritzBoxSoap soap = new FritzBoxSoap.FritzBoxSoap("192.168.178.1", "-");
-                while (true)
+                try
                 {
-                    var currentdl = soap.getCurrentDlSpeed();
-                    var currentul = soap.getCurrentUpSpeed();
+                    PercentageDl = 50;
+                    FritzBoxSoap.FritzBoxSoap soap = new FritzBoxSoap.FritzBoxSoap("192.168.178.1", "-");
+                    while (true)
+                    {
+                        var currentdl = soap.getCurrentDlSpeed();
+                        var currentul = soap.getCurrentUpSpeed();
 
-                    var percdl = soap.getPercentageUsageDownStream();
-                    var percul = soap.getPercentageUsageUoStream();
+                        var percdl = soap.getPercentageUsageDownStream();
+                        var percul = soap.getPercentageUsageUoStream();
 
-                    this.PercentageDl = Convert.ToInt32(percdl);
-                    this.PercentageUl = Convert.ToInt32(percul);
-                    Thread.Sleep(2000);
+                        this.PercentageDl = Convert.ToInt32(percdl);
+                        this.PercentageUl = Convert.ToInt32(percul);
+                        Thread.Sleep(5000);
 
-                }
+                    }
+                } catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                } 
+                
             }).Start();
 
 

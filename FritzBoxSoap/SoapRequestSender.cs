@@ -28,7 +28,7 @@ namespace FritzBoxSoap
         private string SendSoapRequest(String url, WebHeaderCollection headers, String body, NetworkCredential cred)
         {
 
-            if (this.cache.ContainsKey(url) && (DateTime.Now - this.timewatchdict[url]).TotalSeconds < 2)
+            if (this.cache.ContainsKey(url) && (DateTime.Now - this.timewatchdict[url]).TotalSeconds < 5)
             {
                 Console.WriteLine("Using Cached entry");
                 return this.cache[url];
