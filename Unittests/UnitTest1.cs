@@ -12,21 +12,7 @@ namespace Unittests
         [TestMethod]
         public void TestMethod1()
         {
-            var req = new SoapRequestSender("192.168.178.1", "-");
-            using (var writer = new System.IO.StreamWriter("log.meem"))
-            {
-                writer.WriteLine("TEST");
-                writer.WriteLine(req.GetOnlineMonitorInfo().getCurrentDownStreamRate());
-                writer.WriteLine(req.GetOnlineMonitorInfo().getCurrentDownStreamRate());
-
-                writer.WriteLine(req.GetOnlineMonitorInfo().getCurrentDownStreamRate());
-
-                writer.WriteLine(req.GetOnlineMonitorInfo().getCurrentDownStreamRate());
-                writer.WriteLine(req.GetOnlineMonitorInfo().getCurrentDownStreamRate());
-                writer.WriteLine(req.GetOnlineMonitorInfo().getCurrentDownStreamRate());
-                var str = req.GetOnlineMonitorInfo().getCurrentDownStreamRate();
-                writer.WriteLine(str);
-            }
+         
                
         }
 

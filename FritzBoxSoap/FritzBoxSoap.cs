@@ -33,10 +33,10 @@ namespace FritzBoxSoap
             WANInfo info = this.sender.GetWANInfo();
             OnlineMonitorInfo currinfo = this.sender.GetOnlineMonitorInfo();
 
-            var dl = info.getUpstreamRate() * 1000; // MaxRate format is kbit/s
-            var currentdl = currinfo.getCurrentUpstreamRate()[0]; //CurrentRate is Bits per second
+            var ul = info.getUpstreamRate() * 1000; // MaxRate format is kbit/s
+            var currentul = currinfo.getCurrentUpstreamRate()[0] * 8; //CurrentRate is Bits per second
 
-            double percentage = ((double)currentdl / (double)dl);
+            double percentage = ((double)currentul / (double)ul);
             return percentage * 100;
         }
 
