@@ -35,8 +35,8 @@ namespace TaskBar
         {
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.tx = new System.Windows.Forms.Label();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.progressBar2 = new System.Windows.Forms.ProgressBar();
+            this.progressBar1 = new StyledProgressBar();
+            this.progressBar2 = new StyledProgressBar();
             this.label1 = new System.Windows.Forms.Label();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -58,6 +58,7 @@ namespace TaskBar
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(194, 37);
             this.tableLayoutPanel1.TabIndex = 0;
+            this.tableLayoutPanel1.BackColor = Color.Black;
             // 
             // tx
             // 
@@ -152,8 +153,8 @@ namespace TaskBar
         #endregion
 
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private System.Windows.Forms.ProgressBar progressBar1;
-        private System.Windows.Forms.ProgressBar progressBar2;
+        private StyledProgressBar progressBar1;
+        private StyledProgressBar progressBar2;
         private System.Windows.Forms.Label tx;
         private System.Windows.Forms.Label label1;
     }

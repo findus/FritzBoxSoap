@@ -51,6 +51,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="StyleProgressBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="TaskBar.cs">
       <SubType>UserControl</SubType>
     </Compile>
