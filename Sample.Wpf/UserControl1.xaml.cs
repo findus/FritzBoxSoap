@@ -79,40 +79,58 @@ namespace Sample.Wpf
         public UserControl1()
         {
             InitializeComponent();
-            Options.MinHorizontal.Width = 100;
-            Options.MinVertical.Width = 130;
-            Options.MinVertical.Height = 200;
+            Options.MinHorizontal.Width = 60;
+            Options.MinVertical.Width = 60;
+            Options.MinVertical.Height = 35;
 
             PercentageDl = 10;
-
-            new Thread(() =>
+            try
             {
-                try
+                new Thread(() =>
                 {
                     PercentageDl = 50;
                     FritzBoxSoap.FritzBoxSoap soap = new FritzBoxSoap.FritzBoxSoap("192.168.178.1", "-");
                     while (true)
                     {
-                        var currentdl = soap.getCurrentDlSpeed();
-                        var currentul = soap.getCurrentUpSpeed();
+                        try
+                        {
+                            this.grid.Dispatcher.Invoke( () =>
+                            {
+                                this.grid.UpdateLayout();
+                                this.grid.Visibility = Visibility.Hidden;
+                                this.grid.Visibility = Visibility.Visible;
+                            });
+                           
 
-                        var percdl = soap.getPercentageUsageDownStream();
-                        var percul = soap.getPercentageUsageUoStream();
+                            var currentdl = soap.getCurrentDlSpeed();
+                            var currentul = soap.getCurrentUpSpeed();
 
-                        this.PercentageDl = Convert.ToInt32(percdl);
-                        this.PercentageUl = Convert.ToInt32(percul);
-                        Thread.Sleep(5000);
+                            var percdl = soap.getPercentageUsageDownStream();
+                            var percul = soap.getPercentageUsageUoStream();
 
+                            this.PercentageDl = Convert.ToInt32(percdl);
+                            this.PercentageUl = Convert.ToInt32(percul);
+
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                        }
+                        finally
+                        {
+                            Thread.Sleep(5000);
+                        }
                     }
-                } catch(Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                } 
+
+                }).Start();
+             
+
+                Options.ContextMenuItems = ContextMenuItems;
+            } catch (Exception e)
+            {
                 
-            }).Start();
-
-
-            Options.ContextMenuItems = ContextMenuItems;
+            }
+           
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -40,6 +40,18 @@ namespace FritzBoxSoap
             return percentage * 100;
         }
 
+        public string getUlAmount()
+        {
+            OnlineMonitorInfo currinfo = this.sender.GetOnlineMonitorInfo();
+            return (currinfo.getCurrentUpstreamRate()[0] * 8).ToString(); //CurrentRate is Bits per second
+        }
+
+        public string getDlAmount()
+        {
+            OnlineMonitorInfo currinfo = this.sender.GetOnlineMonitorInfo();
+            return (currinfo.getCurrentDownStreamRate()[0] * 8).ToString(); //CurrentRate is Bits per second
+        }
+
         /// <summary>
         /// Retunrs Current DownloadSpeed in Bits per second
         /// </summary>
