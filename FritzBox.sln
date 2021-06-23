@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSDeskband.Win", "CSDeskBan
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSDeskband.Wpf", "CSDeskBand.Wpf\CSDeskband.Wpf.csproj", "{3BEE7144-7E4E-44F6-9C36-B147D15F944F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FritzboxDeskband", "Sample.Wpf\FritzboxDeskband.csproj", "{3DE80424-6C5D-4F5D-ADA4-16B6DF9DCC89}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FritzboxDeskband", "FritzboxDeskband\FritzboxDeskband.csproj", "{3DE80424-6C5D-4F5D-ADA4-16B6DF9DCC89}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
