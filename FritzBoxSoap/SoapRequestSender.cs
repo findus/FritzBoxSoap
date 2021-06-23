@@ -4,9 +4,69 @@ using System.Xml;
 using System.Threading;
 using System.Net.Security;
 using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace FritzBoxSoap
 {
+
+    public class WebClient : System.Net.WebClient
+    {
+        public WebClient()
+        {
+            ServicePointManager.Expect100Continue = true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+            this.container = new CookieContainer();
+        }
+        public WebClient(CookieContainer container)
+        {
+            this.container = container;
+        }
+
+        public CookieContainer CookieContainer
+        {
+            get { return container; }
+            set { container = value; }
+        }
+
+        private CookieContainer container = new CookieContainer();
+
+        protected override WebRequest GetWebRequest(Uri address)
+        {
+            WebRequest r = base.GetWebRequest(address);
+            var request = r as HttpWebRequest;
+            if (request != null)
+            {
+                request.CookieContainer = container;
+            }
+            return r;
+        }
+
+        protected override WebResponse GetWebResponse(WebRequest request, IAsyncResult result)
+        {
+            WebResponse response = base.GetWebResponse(request, result);
+            ReadCookies(response);
+            return response;
+        }
+
+        protected override WebResponse GetWebResponse(WebRequest request)
+        {
+            WebResponse response = base.GetWebResponse(request);
+            ReadCookies(response);
+            return response;
+        }
+
+        private void ReadCookies(WebResponse r)
+        {
+            var response = r as HttpWebResponse;
+            if (response != null)
+            {
+                CookieCollection cookies = response.Cookies;
+                container.Add(cookies);
+            }
+        }
+    }
+
     public class SoapRequestSender
     {
 
@@ -27,6 +87,12 @@ namespace FritzBoxSoap
 
         private string SendSoapRequest(String url, WebHeaderCollection headers, String body, NetworkCredential cred)
         {
+
+            ServicePointManager.ServerCertificateValidationCallback =
+           new RemoteCertificateValidationCallback(
+                delegate
+                { return true; }
+            );
 
             if (this.cache.ContainsKey(url) && (DateTime.Now - this.timewatchdict[url]).TotalSeconds < 5)
             {
@@ -113,7 +179,7 @@ namespace FritzBoxSoap
         public OnlineMonitorInfo GetOnlineMonitorInfo()
         {
 
-            var url = "http://" + ip + ":49000/upnp/control/wancommonifconfig1";
+            var url = "https://" + ip + ":" + GetPort() + "/upnp/control/wancommonifconfig1";
 
             var header = new WebHeaderCollection();
             header.Add("Content-Type", "text/xml; charset='utf-8'");
@@ -125,7 +191,7 @@ namespace FritzBoxSoap
                             <s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/"" s:encodingStyle=""http://schemas.xmlsoap.org/soap/encoding/"">
                                 <s:Body>
                                     <u:X_AVM-DE_GetOnlineMonitor xmlns:u=""urn:dslforum-org:service:WANDSLInterfaceConfig:1"">
-                                        <NewSyncGroupIndex></NewSyncGroupIndex>
+                                        <NewSyncGroupIndex>0</NewSyncGroupIndex>
                                     </u:X_AVM-DE_GetOnlineMonitor>
                                 </s:Body>
                             </s:Envelope>".Replace(System.Environment.NewLine, "");
