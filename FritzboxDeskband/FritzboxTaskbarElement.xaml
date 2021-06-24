@@ -5,11 +5,11 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d"   
              d:DesignHeight="60"
-             d:DesignWidth="100"
+             d:DesignWidth="70"
              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
              DataContext="{Binding RelativeSource={RelativeSource Self}}"
              Foreground="White" Margin="0,0,0,0">
-    <Grid x:Name="mainGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,7,0,7" Background="Transparent" Width="100">
+    <Grid x:Name="mainGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,7,0,7" Background="Transparent" Width="70">
 
         <Grid.RowDefinitions>
             <RowDefinition Height="25*" />
