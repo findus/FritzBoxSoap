@@ -21,9 +21,8 @@ namespace FritzboxDeskband
         public Deskband()
         {
             var toolbarHeight = SystemParameters.PrimaryScreenHeight - SystemParameters.FullPrimaryScreenHeight - SystemParameters.WindowCaptionHeight;
-            DeskBandSize size = new DeskBandSize(100, (int) toolbarHeight);
+            DeskBandSize size = new DeskBandSize(100, -1);
             Options.MinHorizontalSize = size;
-            Options.MinVerticalSize = size;
         }
 
         protected override UIElement UIElement => new FritzboxTaskbarElement();
