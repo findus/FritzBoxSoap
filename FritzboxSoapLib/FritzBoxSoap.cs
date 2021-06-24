@@ -1,4 +1,8 @@
-﻿namespace FritzBoxSoap
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace FritzBoxSoap
 {
     public class FritzBoxSoap
     {

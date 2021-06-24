@@ -1,149 +1,144 @@
-﻿using CSDeskBand.Interop;
-using CSDeskBand.Interop.COM;
-using CSDeskBand.Logging;
-using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using static CSDeskBand.Interop.DESKBANDINFO.DBIF;
-using static CSDeskBand.Interop.DESKBANDINFO.DBIM;
-using static CSDeskBand.Interop.DESKBANDINFO.DBIMF;
-
-namespace CSDeskBand
+﻿namespace CSDeskBand
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Runtime.InteropServices;
+    using CSDeskBand.ContextMenu;
+    using CSDeskBand.Interop;
+    using static CSDeskBand.Interop.DESKBANDINFO.DBIF;
+    using static CSDeskBand.Interop.DESKBANDINFO.DBIM;
+    using static CSDeskBand.Interop.DESKBANDINFO.DBIMF;
+
     /// <summary>
     /// Default implementation for icsdeskband
     /// </summary>
-    internal class CSDeskBandImpl : ICSDeskBand
+    internal sealed class CSDeskBandImpl : ICSDeskBand
     {
-        public event EventHandler<VisibilityChangedEventArgs> VisibilityChanged;
-        public event EventHandler Closed;
-
-        public CSDeskBandOptions Options { get; }
-        public TaskbarInfo TaskbarInfo { get; } = new TaskbarInfo();
-
-        private readonly IntPtr _handle;
+        private readonly IDeskBandProvider _provider;
+        private readonly Dictionary<uint, DeskBandMenuAction> _contextMenuActions = new Dictionary<uint, DeskBandMenuAction>();
         private IntPtr _parentWindowHandle;
-        private object _parentSite; //Has these interfaces: IInputObjectSite, IOleWindow, IOleCommandTarget, IBandSite
+        private object _parentSite; // Has these interfaces: IInputObjectSite, IOleWindow, IOleCommandTarget, IBandSite
         private uint _id;
-        private uint _cmdIdOffset = 0;
-        private bool _isDirty = true;
-        private Guid CGID_DeskBand = new Guid("EB0FE172-1A3A-11D0-89B3-00A0C90A90AC"); //Command group id for deskband. Used for IOleCommandTarge.Exec
-        private readonly ILog _logger = LogProvider.GetCurrentClassLogger();
-        private readonly Dictionary<uint, CSDeskBandMenuAction> _contextMenuActions = new Dictionary<uint, CSDeskBandMenuAction>();
+        private uint _menutStartId = 0;
+        private Guid _deskbandCommandGroupId = new Guid("EB0FE172-1A3A-11D0-89B3-00A0C90A90AC"); // Command group id for deskband. Used for IOleCommandTarge.Exec
 
-        public CSDeskBandImpl(IntPtr handle, CSDeskBandOptions options)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CSDeskBandImpl"/> class
+        /// with the handle to the window and the options.
+        /// </summary>
+        public CSDeskBandImpl(IDeskBandProvider provider)
         {
-            _handle = handle;
-            Options = options;
+            _provider = provider;
+            Options = provider.Options;
             Options.PropertyChanged += Options_PropertyChanged;
         }
 
-        private void Options_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (_parentSite == null)
-            {
-                return;
-            }
-            _logger.Debug("Deskband options have changed");
+        /// <summary>
+        /// Occurs when the deskband is closed.
+        /// </summary>
+        internal event EventHandler Closed;
 
-            var parent = (IOleCommandTarget) _parentSite;
-            //Set pvaln to the id that was passed in SetSite
-            //When int is marshalled to variant, it is marshalled as VT_i4. See default marshalling for objects
-            parent.Exec(ref CGID_DeskBand, (uint) tagDESKBANDCID.DBID_BANDINFOCHANGED, 0, _id, null);
-        }
+        /// <summary>
+        /// Gets the <see cref="CSDeskBandOptions"/>.
+        /// </summary>
+        internal CSDeskBandOptions Options { get; }
 
+        /// <summary>
+        /// Gets the <see cref="TaskbarInfo"/>.
+        /// </summary>
+        internal TaskbarInfo TaskbarInfo { get; } = new TaskbarInfo();
+
+        /// <inheritdoc/>
         public int GetWindow(out IntPtr phwnd)
         {
-            phwnd = _handle;
+            phwnd = _provider.Handle;
             return HRESULT.S_OK;
         }
 
+        /// <inheritdoc/>
         public int ContextSensitiveHelp(bool fEnterMode)
         {
             return HRESULT.E_NOTIMPL;
         }
 
+        /// <inheritdoc/>
         public int ShowDW([In] bool fShow)
         {
-            VisibilityChanged?.Invoke(this, new VisibilityChangedEventArgs { IsVisible = fShow });
             return HRESULT.S_OK;
         }
 
+        /// <inheritdoc/>
         public int CloseDW([In] uint dwReserved)
         {
             Closed?.Invoke(this, null);
             return HRESULT.S_OK;
         }
 
+        /// <inheritdoc/>
         public int ResizeBorderDW(RECT prcBorder, [In, MarshalAs(UnmanagedType.IUnknown)] IntPtr punkToolbarSite, bool fReserved)
         {
-            //must return notimpl
+            // Must return notimpl
             return HRESULT.E_NOTIMPL;
         }
 
+        /// <inheritdoc/>
         public int GetBandInfo(uint dwBandID, DESKBANDINFO.DBIF dwViewMode, ref DESKBANDINFO pdbi)
         {
+            // Sizing information is requested whenever the taskbar changes size/orientation
             _id = dwBandID;
 
-            //Sizing information is requested whenever the taskbar changes size/orientation
             if (pdbi.dwMask.HasFlag(DBIM_MINSIZE))
             {
-                _logger.Debug("Deskband minsize requested");
                 if (dwViewMode.HasFlag(DBIF_VIEWMODE_VERTICAL))
                 {
-                    pdbi.ptMinSize.Y = Options.MinVertical.Width;
-                    pdbi.ptMinSize.X = Options.MinVertical.Height;
+                    pdbi.ptMinSize.Y = Options.MinVerticalSize.Width;
+                    pdbi.ptMinSize.X = Options.MinVerticalSize.Height;
                 }
                 else
                 {
-                    pdbi.ptMinSize.X = Options.MinHorizontal.Width;
-                    pdbi.ptMinSize.Y = Options.MinHorizontal.Height;
+                    pdbi.ptMinSize.X = Options.MinHorizontalSize.Width;
+                    pdbi.ptMinSize.Y = Options.MinHorizontalSize.Height;
                 }
             }
 
+            // X is ignored
             if (pdbi.dwMask.HasFlag(DBIM_MAXSIZE))
             {
-                _logger.Debug("Deskband maxsize requested");
                 if (dwViewMode.HasFlag(DBIF_VIEWMODE_VERTICAL))
                 {
-                    pdbi.ptMaxSize.Y = Options.MaxVertical.Width;
-                    pdbi.ptMaxSize.X = Options.MaxVertical.Height;
+                    pdbi.ptMaxSize.Y = Options.MaxVerticalWidth;
+                    pdbi.ptMaxSize.X = 0;
                 }
                 else
                 {
-                    pdbi.ptMaxSize.X = Options.MaxHorizontal.Width;
-                    pdbi.ptMaxSize.Y = Options.MaxHorizontal.Height;
+                    pdbi.ptMaxSize.X = 0;
+                    pdbi.ptMaxSize.Y = Options.MaxHorizontalHeight;
                 }
             }
 
             // x member is ignored
             if (pdbi.dwMask.HasFlag(DBIM_INTEGRAL))
             {
-                _logger.Debug("Deskband integral requested");
-                pdbi.ptIntegral.Y = Options.Increment;
+                pdbi.ptIntegral.Y = Options.HeightIncrement;
                 pdbi.ptIntegral.X = 0;
             }
 
             if (pdbi.dwMask.HasFlag(DBIM_ACTUAL))
             {
-                _logger.Debug("Deskband actual size requested");
                 if (dwViewMode.HasFlag(DBIF_VIEWMODE_VERTICAL))
                 {
-                    pdbi.ptActual.Y = Options.Vertical.Width;
-                    pdbi.ptActual.X = Options.Vertical.Height;
+                    pdbi.ptActual.Y = Options.VerticalSize.Width;
+                    pdbi.ptActual.X = Options.VerticalSize.Height;
                 }
                 else
                 {
-                    pdbi.ptActual.X = Options.Horizontal.Width;
-                    pdbi.ptActual.Y = Options.Horizontal.Height;
+                    pdbi.ptActual.X = Options.HorizontalSize.Width;
+                    pdbi.ptActual.Y = Options.HorizontalSize.Height;
                 }
             }
 
             if (pdbi.dwMask.HasFlag(DBIM_TITLE))
             {
-                _logger.Debug("Deskband tile requested");
                 pdbi.wszTitle = Options.Title;
                 if (!Options.ShowTitle)
                 {
@@ -154,16 +149,9 @@ namespace CSDeskBand
             if (pdbi.dwMask.HasFlag(DBIM_MODEFLAGS))
             {
                 pdbi.dwModeFlags = DBIMF_NORMAL;
-                pdbi.dwModeFlags |= Options.AlwaysShowGripper ? DBIMF_ALWAYSGRIPPER : 0;
-                pdbi.dwModeFlags |= Options.Fixed ? DBIMF_FIXED | DBIMF_NOGRIPPER : 0;
-                pdbi.dwModeFlags |= Options.NoMargins ? DBIMF_NOMARGINS : 0;
-                pdbi.dwModeFlags |= Options.Sunken ? DBIMF_DEBOSSED : 0;
-                pdbi.dwModeFlags |= Options.Undeleteable ? DBIMF_UNDELETEABLE : 0;
-                pdbi.dwModeFlags |= Options.VariableHeight ? DBIMF_VARIABLEHEIGHT : 0;
-                pdbi.dwModeFlags |= Options.AddToFront ? DBIMF_ADDTOFRONT : 0;
-                pdbi.dwModeFlags |= Options.NewRow ? DBIMF_BREAK : 0;
-                pdbi.dwModeFlags |= Options.TopRow ? DBIMF_TOPALIGN : 0;
-                pdbi.dwModeFlags &= ~DBIMF_BKCOLOR; //Don't use background color
+                pdbi.dwModeFlags |= Options.IsFixed ? DBIMF_FIXED | DBIMF_NOGRIPPER : 0;
+                pdbi.dwModeFlags |= Options.HeightCanChange ? DBIMF_VARIABLEHEIGHT : 0;
+                pdbi.dwModeFlags &= ~DBIMF_BKCOLOR; // Don't use background color
             }
 
             TaskbarInfo.UpdateInfo();
@@ -171,122 +159,92 @@ namespace CSDeskBand
             return HRESULT.S_OK;
         }
 
+        /// <inheritdoc/>
         public int CanRenderComposited(out bool pfCanRenderComposited)
         {
             pfCanRenderComposited = true;
             return HRESULT.S_OK;
         }
 
+        /// <inheritdoc/>
         public int SetCompositionState(bool fCompositionEnabled)
         {
             return HRESULT.S_OK;
         }
 
+        /// <inheritdoc/>
         public int GetCompositionState(out bool pfCompositionEnabled)
         {
             pfCompositionEnabled = true;
             return HRESULT.S_OK;
         }
 
-        public void SetSite([In, MarshalAs(UnmanagedType.IUnknown)] object pUnkSite)
+        /// <inheritdoc/>
+        public int SetSite([In, MarshalAs(UnmanagedType.IUnknown)] object pUnkSite)
         {
-            if (_parentSite != null)
-            {
-                Marshal.ReleaseComObject(_parentSite);
-            }
+            // Let gc release old site
+            _parentSite = null;
 
-            //pUnkSite null means deskband was closed
+            // pUnkSite null means deskband was closed
             if (pUnkSite == null)
             {
-                _logger.Debug("Closing deskband");
                 Closed?.Invoke(this, null);
-                return;
+                return HRESULT.S_OK;
             }
 
-            var oleWindow = (IOleWindow)pUnkSite;
-            oleWindow.GetWindow(out _parentWindowHandle);
-            User32.SetParent(_handle, _parentWindowHandle);
-
-            _parentSite = pUnkSite;
-        }
-
-        public void GetSite(ref Guid riid, [MarshalAs(UnmanagedType.IUnknown)] out object ppvSite)
-        {
-            ppvSite = _parentSite;
-        }
-
-        [ComRegisterFunction]
-        public static void Register(Type t)
-        {
-            string guid = t.GUID.ToString("B");
             try
             {
-                var registryKey = Registry.ClassesRoot.CreateSubKey($@"CLSID\{guid}");
-                registryKey.SetValue(null, GetToolbarName(t));
+                var oleWindow = (IOleWindow)pUnkSite;
+                oleWindow.GetWindow(out _parentWindowHandle);
+                User32.SetParent(_provider.Handle, _parentWindowHandle);
 
-                var subKey = registryKey.CreateSubKey("Implemented Categories");
-                subKey.CreateSubKey(ComponentCategoryManager.CATID_DESKBAND.ToString("B"));
-
-                Console.WriteLine($"Succesfully registered deskband `{GetToolbarName(t)}` - GUID: {guid}");
+                _parentSite = (IInputObjectSite)pUnkSite;
+                return HRESULT.S_OK;
             }
-            catch (Exception)
+            catch
             {
-                Console.Error.WriteLine($"Failed to register deskband `{GetToolbarName(t)}` - GUID: {guid}");
-                throw;
+                return HRESULT.E_FAIL;
             }
         }
 
-        [ComUnregisterFunction]
-        public static void Unregister(Type t)
+        /// <inheritdoc/>
+        public int GetSite(ref Guid riid, [MarshalAs(UnmanagedType.IUnknown)] out IntPtr ppvSite)
         {
-            string guid = t.GUID.ToString("B");
-            try
+            if (_parentSite == null)
             {
-                Registry.ClassesRoot.OpenSubKey(@"CLSID", true)?.DeleteSubKeyTree(guid);
+                ppvSite = IntPtr.Zero;
+                return HRESULT.E_FAIL;
+            }
 
-                Console.WriteLine($"Successfully unregistered deskband `{GetToolbarName(t)}` - GUID: {guid}");
-            }
-            catch (ArgumentException)
-            {
-                Console.Error.WriteLine($"Deskband `{GetToolbarName(t)}` is not registered");
-            }
-            catch (Exception)
-            {
-                Console.Error.WriteLine($"Failed to unregister deskband `{GetToolbarName(t)}` - GUID: {guid}");
-                throw;
-            }
+            return Marshal.QueryInterface(Marshal.GetIUnknownForObject(_parentSite), ref riid, out ppvSite);
         }
 
-        internal static string GetToolbarName(Type t)
-        {
-            return t.GetCustomAttribute<CSDeskBandRegistrationAttribute>(true)?.Name ?? t.Name;
-        }
-
+        /// <inheritdoc/>
         public int QueryContextMenu(IntPtr hMenu, uint indexMenu, uint idCmdFirst, uint idCmdLast, QueryContextMenuFlags uFlags)
         {
-            _logger.Debug($"Was queried for context menu - index: {indexMenu} cmd first: {idCmdFirst}, cmd last: {idCmdLast}, flags: {uFlags}");
             if (uFlags.HasFlag(QueryContextMenuFlags.CMF_DEFAULTONLY))
             {
-                return HRESULT.MakeHResult((uint) HRESULT.S_OK, 0, 0);
+                return HRESULT.MakeHResult((uint)HRESULT.S_OK, 0, 0);
             }
 
-            _cmdIdOffset = idCmdFirst;
+            _menutStartId = idCmdFirst;
             foreach (var item in Options.ContextMenuItems)
             {
                 item.AddToMenu(hMenu, indexMenu++, ref idCmdFirst, _contextMenuActions);
             }
 
-            return HRESULT.MakeHResult((uint)HRESULT.S_OK, 0, idCmdFirst + 1); //#id of last command + 1
+            return HRESULT.MakeHResult((uint)HRESULT.S_OK, 0, idCmdFirst + 1); // #id of last command + 1
         }
 
+        /// <inheritdoc/>
         public int InvokeCommand(IntPtr pici)
         {
-            _logger.Debug("Invoking context menu action");
-
             var commandInfo = Marshal.PtrToStructure<CMINVOKECOMMANDINFO>(pici);
-            bool isUnicode = false;
-            bool isExtended = false;
-            IntPtr verbPtr = commandInfo.lpVerb;
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
+            var isUnicode = false;
+            var isExtended = false;
+#pragma warning restore CS0219 // Variable is assigned but its value is never used
+            var verbPtr = commandInfo.lpVerb;
 
             if (commandInfo.cbSize == Marshal.SizeOf<CMINVOKECOMMANDINFOEX>())
             {
@@ -302,14 +260,13 @@ namespace CSDeskBand
 
             if (User32.HiWord(commandInfo.lpVerb.ToInt32()) != 0)
             {
-                //TODO verbs
+                // TODO verbs
                 return HRESULT.E_FAIL;
             }
 
             var cmdIndex = User32.LoWord(verbPtr.ToInt32());
 
-            CSDeskBandMenuAction action;
-            if (!_contextMenuActions.TryGetValue((uint)cmdIndex + _cmdIdOffset, out action))
+            if (!_contextMenuActions.TryGetValue((uint)cmdIndex + _menutStartId, out var action))
             {
                 return HRESULT.E_FAIL;
             }
@@ -318,70 +275,109 @@ namespace CSDeskBand
             return HRESULT.S_OK;
         }
 
+        /// <inheritdoc/>
         public int GetCommandString(ref uint idcmd, uint uflags, ref uint pwReserved, out string pcszName, uint cchMax)
         {
             pcszName = "";
             return HRESULT.E_NOTIMPL;
         }
 
+        /// <inheritdoc/>
         public int HandleMenuMsg(uint uMsg, IntPtr wParam, IntPtr lParam)
         {
-            IntPtr i;
-            return HandleMenuMsg2(uMsg, wParam, lParam, out i);
+            return HandleMenuMsg2(uMsg, wParam, lParam, out var i);
         }
 
+        /// <inheritdoc/>
         public int HandleMenuMsg2(uint uMsg, IntPtr wParam, IntPtr lParam, out IntPtr plResult)
         {
             plResult = IntPtr.Zero;
             return HRESULT.S_OK;
         }
 
+        /// <inheritdoc/>
         public int GetClassID(out Guid pClassID)
         {
-            throw new NotImplementedException();
+            pClassID = _provider.Guid;
+            return HRESULT.S_OK;
         }
 
+        /// <inheritdoc/>
         public int GetSizeMax(out ulong pcbSize)
         {
             pcbSize = 0;
-            return HRESULT.E_NOTIMPL;
+            return HRESULT.S_OK;
         }
 
+        /// <inheritdoc/>
         public int IsDirty()
         {
-            return _isDirty ? HRESULT.S_OK : HRESULT.S_FALSE;
+            return HRESULT.S_OK;
         }
 
+        /// <inheritdoc/>
         public int Load(object pStm)
         {
             return HRESULT.S_OK;
         }
 
-        public int Save(object pStm, bool fClearDirty)
+        /// <inheritdoc/>
+        public int Save(IntPtr pStm, bool fClearDirty)
         {
-            _isDirty = !fClearDirty;
             return HRESULT.S_OK;
         }
 
+        /// <summary>
+        /// Closes the deskband.
+        /// </summary>
         public void CloseDeskBand()
         {
-            var bandSite = (IBandSite) _parentSite;
+            var bandSite = (IBandSite)_parentSite;
             bandSite.RemoveBand(_id);
         }
 
-        public void UIActivateIO(int fActivate, ref MSG msg)
+        /// <inheritdoc/>
+        public int UIActivateIO(int fActivate, ref MSG msg)
         {
-            //TODO
+            _provider.HasFocus = fActivate != 0;
+            UpdateFocus(_provider.HasFocus);
+            return HRESULT.S_OK;
         }
 
+        /// <inheritdoc/>
         public int HasFocusIO()
         {
-            return HRESULT.E_NOTIMPL;
+            return _provider.HasFocus ? HRESULT.S_OK : HRESULT.S_FALSE;
         }
 
+        /// <inheritdoc/>
         public int TranslateAcceleratorIO(ref MSG msg)
         {
-            return HRESULT.E_NOTIMPL;
+            return HRESULT.S_OK;
+        }
+
+        /// <summary>
+        /// Updates the focus on the deskband. Explorer will call <see cref="UIActivateIO(int, ref MSG)"/> for example if tabbing when the taskbar is focused. 
+        /// But if focus is acquired without in other ways, then explorer isn't aware of it and <see cref="IInputObjectSite.OnFocusChangeIS(object, int)"/> needs to be called.
+        /// </summary>
+        /// <param name="focused">True if focused.</param>
+        public void UpdateFocus(bool focused)
+        {
+            (_parentSite as IInputObjectSite)?.OnFocusChangeIS(this, focused ? 1 : 0);
+        }
+
+        private void Options_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (_parentSite == null)
+            {
+                return;
+            }
+
+            var parent = (IOleCommandTarget)_parentSite;
+
+            // Set pvaln to the id that was passed in SetSite
+            // When int is marshalled to variant, it is marshalled as VT_i4. See default marshalling for objects
+            parent.Exec(ref _deskbandCommandGroupId, (uint)tagDESKBANDCID.DBID_BANDINFOCHANGED, 0, IntPtr.Zero, IntPtr.Zero);
         }
     }
 }

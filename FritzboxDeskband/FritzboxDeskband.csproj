@@ -26,7 +26,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;DESKBAND_WPF</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -90,13 +90,13 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="UserControl1.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <Page Include="FritzboxTaskbarElement.xaml">
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Compile Include="UserControl1.xaml.cs">
-      <DependentUpon>UserControl1.xaml</DependentUpon>
-      <SubType>Code</SubType>
+    <Compile Include="Deskband.cs" />
+    <Compile Include="FritzboxTaskbarElement.xaml.cs">
+      <DependentUpon>FritzboxTaskbarElement.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -124,16 +124,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CSDeskBand.Wpf\CSDeskband.Wpf.csproj">
-      <Project>{3bee7144-7e4e-44f6-9c36-b147d15f944f}</Project>
-      <Name>CSDeskband.Wpf</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CSDeskBand\CSDeskband.csproj">
       <Project>{37ecdfdd-fa85-4b91-b69f-8b53cb2a23e2}</Project>
       <Name>CSDeskband</Name>
     </ProjectReference>
     <ProjectReference Include="..\FritzBoxSoap\FritzBoxSoap.csproj">
-      <Project>{46DE790F-510F-4ACE-804D-03A68F797D20}</Project>
+      <Project>{46de790f-510f-4ace-804d-03a68f797d20}</Project>
       <Name>FritzBoxSoap</Name>
     </ProjectReference>
   </ItemGroup>
