@@ -128,7 +128,6 @@ namespace FritzboxDeskband
                         catch (Exception e)
                         {
                             Console.WriteLine(e.Message);
-                            MessageBox.Show(e.ToString());
 
                             this.PercentageDl = Convert.ToInt32(50);
                             this.PercentageUl = Convert.ToInt32(50);
