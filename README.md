@@ -13,3 +13,6 @@ Short Memo on how to build the Deskband:
 * Check if all Projects include the Certificate so that Strong Named Assemblies are getting created
 * Build the Project for AnyCPU/Release
 * Use the reload.bat Script to register the Deskband (make sure to use the vscode developer console)
+
+Maybe set Nuget Package Source URL:
+https://api.nuget.org/v3/index.json

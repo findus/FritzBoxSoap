@@ -14,8 +14,8 @@ namespace FritzboxDeskband
     /// Example WPF deskband. Shows taskbar info capabilities and context menus
     /// </summary>
     [ComVisible(true)]
-    [Guid("89BF6B36-A0B0-4C95-A666-87A55C226981")]
-    [CSDeskBandRegistration(Name = "Fritzbox Widget 2")]
+    [Guid("89BF6B36-A0B0-4C95-A666-87A55C226982")]
+    [CSDeskBandRegistration(Name = "Fritzbox Widget")]
     public class Deskband : CSDeskBandWpf
     {
         public Deskband()
