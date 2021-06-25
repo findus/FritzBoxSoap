@@ -8,7 +8,7 @@
              mc:Ignorable="d"   
              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
              DataContext="{Binding RelativeSource={RelativeSource Self}}"
-             Foreground="White"  d:DesignWidth="74.197" d:DesignHeight="35.512" Margin="0,5,0,5">
+             Foreground="White"  d:DesignWidth="77.531" d:DesignHeight="35.029" Margin="0,5,0,5">
     <Grid x:Name="mainGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,0,0,0" Background="Transparent">
 
         <Grid.RowDefinitions>
@@ -36,7 +36,12 @@
             </ProgressBar>
         </Border>
 
-        <Label Content="D:"  Padding="0,0,0,0"  Grid.Column="0" HorizontalAlignment="Center" Margin="0,0,0,2.333" VerticalAlignment="Center" VerticalContentAlignment="Bottom" Foreground="White" FontSize="10" Grid.ColumnSpan="1"/>
-        <Label Content="U:"  Padding="0,0,0,0"  Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center"  Margin="0,1.667,0,0" VerticalAlignment="Center" VerticalContentAlignment="Top" Foreground="White" FontSize="10" Grid.ColumnSpan="1" Grid.RowSpan="2"/>
+        <Viewbox  Grid.Column="0" HorizontalAlignment="Center" Margin="0,0,4,2.333" VerticalAlignment="Center" Grid.ColumnSpan="1">
+            <TextBlock>D:</TextBlock>
+        </Viewbox>
+
+        <Viewbox Grid.Column="0"  Grid.Row="1" HorizontalAlignment="Center" Margin="0,1.667,4,0" VerticalAlignment="Center" Grid.ColumnSpan="1">
+            <TextBlock>U:</TextBlock>
+        </Viewbox>
     </Grid>
 </UserControl>
